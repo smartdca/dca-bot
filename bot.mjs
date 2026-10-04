@@ -35,12 +35,25 @@ const store = (dryRun && !process.env.GOOGLE_SERVICE_ACCOUNT)
   ? memoryStore()
   : sheetsStore({ ...config.sheet, serviceAccount: env('GOOGLE_SERVICE_ACCOUNT') });
 
-const summary = await runBatch({
+let summary;
+try {
+summary = await runBatch({
   config, db, store, adapters, dryRun,
+  log: (m) => notice(dryRun ? '試跑' : '訊息', m),
   scorer: makeScorer({ api: config.scoreApi, gapMs: config.scoreRequestGapMs }),
 });
+} catch (e) {
+  console.log(`::error title=執行失敗::${String(e.message).replace(/\n/g, '%0A')}`);
+  process.exit(1);
+}
 
 console.log(`代碼資料庫：${db.updated}｜美股 ${Object.keys(db.us).length}｜台股 ${Object.keys(db.tw).length}｜加密貨幣 ${Object.keys(db.crypto).length}`);
 for (const [p, s] of Object.entries(summary)) {
-  console.log(`${p}：抓到 ${s.fetched} 則｜含 $ ${s.withDollar}｜回覆 ${s.replied}｜當日已回過 ${s.limited}｜算不出分數 ${s.unsupported}｜下批重試 ${s.retryLater}${s.capReached ? '｜⚠️ 已達每日上限' : ''}`);
+  notice(`${p} 統計`, `抓到 ${s.fetched} 則｜含 $ ${s.withDollar}｜回覆 ${s.replied}｜當日已回過 ${s.limited}｜算不出分數 ${s.unsupported}｜下批重試 ${s.retryLater}${s.capReached ? '｜⚠️ 已達每日上限' : ''}`);
+}
+
+// GitHub「提示訊息」：會顯示在執行結果頁面上方，也能透過 API 讀取（執行紀錄本身不一定讀得到）
+function notice(title, msg) {
+  const esc = String(msg).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+  console.log(`::notice title=${title}::${esc}`);
 }
