@@ -10,7 +10,7 @@
 //   · 標題附上查詢日期（分數是當下的快照）：時區與網站計算相同（UTC），中英文統一格式 Oct 5, 2026
 
 const DIVIDER = '━━━━━━━━━━━━';
-const TITLE = (date) => `☕ DCA Café｜${date}`;
+const TITLE = (date) => `☕ DCAcafé｜${date}`;
 
 export function formatDate(d) {
   return new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' }).format(d);
