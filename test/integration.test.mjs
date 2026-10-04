@@ -150,6 +150,7 @@ test('加密貨幣：排除穩定幣、黃金代幣、包裝幣', () => {
     { symbol: 'steth', name: 'Lido Staked Ether', current_price: 4000 },
     { symbol: 'eth', name: 'Ethereum', current_price: 4000 },
     { symbol: 'xyzusd', name: 'XYZ USD', current_price: 1.0 },
+    { symbol: 'gho', name: 'GHO', current_price: 1.0 },
   ];
   assert.deepEqual(filterCoins(coins).map((c) => c.sym), ['BTC', 'ETH']);
 });

@@ -69,7 +69,8 @@ export function parseTwList(records, suffix) {
 // 排除規則與網站「每週精選」完全相同（scripts/update_picks.py）。
 export const STABLECOIN_SYMBOLS = new Set(['USDT', 'USDC', 'USDE', 'DAI', 'USD1', 'USDG', 'PYUSD', 'RLUSD', 'USDD', 'U',
   'TUSD', 'FDUSD', 'USDS', 'EURC', 'USD0', 'USDTB', 'BUSD', 'GUSD', 'USDP',
-  'FRAX', 'LUSD', 'USDX', 'USDF', 'BFUSD', 'SUSDE', 'SUSDS']);
+  'FRAX', 'LUSD', 'USDX', 'USDF', 'BFUSD', 'SUSDE', 'SUSDS',
+  'GHO']); // GHO：Aave 的美元穩定幣，名稱裡沒有 USD，價格判斷抓不到，所以列名排除（每週精選只取前 20，碰不到它）
 export const GOLD_TOKEN_SYMBOLS = new Set(['XAUT', 'PAXG', 'KAU']);
 const DERIVATIVE_NAME_WORDS = ['wrapped', 'staked', 'bridged', 'restaked', 'binance-peg', 'liquid staking', 'stakewise', 'coinbase wrapped'];
 
