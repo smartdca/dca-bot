@@ -57,10 +57,16 @@ test('回覆文字', () => {
     { symbol: 'TSLA', name: 'Tesla, Inc.', status: 'unsupported' },
   ];
   const zh = formatReply({ lang: 'zh', mention: '', items, siteUrl });
-  assert.equal(zh, 'DCA Score\nApple Inc.（AAPL）：72 分\n台積電（2330.TW）：60 分\nTesla, Inc.（TSLA）：暫時無法計算\n\n即時查詢：dcacafe.com/zh/\n分數僅供資訊參考');
-  const en = formatReply({ lang: 'en', mention: '@amy', items: items.slice(0, 1), siteUrl });
-  assert.equal(en, '@amy\nDCA Score\nApple Inc. (AAPL): 72\n\nCheck anytime: dcacafe.com\nFor information only. Not investment advice.');
-  assert.ok(!zh.includes('$') && !zh.includes('建議'));
+  assert.equal(zh, [
+    '━━━━━━━━━━━━', '☕ DCA Score', '━━━━━━━━━━━━',
+    '🟢 Apple Inc.（AAPL）72',
+    '🟡 台積電（2330.TW）60', // 59.6 顯示 60，但顏色依原始分數（與網站相同）
+    '⚪ Tesla, Inc.（TSLA）暫時無法計算',
+    '━━━━━━━━━━━━', '即時查詢 ▸ dcacafe.com/zh/', '僅供參考，非投資建議',
+  ].join('\n'));
+  const en = formatReply({ lang: 'en', mention: '@amy', items: [{ symbol: 'X', name: 'X Corp', status: 'ok', score: 12 }], siteUrl });
+  assert.equal(en, '@amy\n━━━━━━━━━━━━\n☕ DCA Score\n━━━━━━━━━━━━\n🔴 X Corp (X) 12\n━━━━━━━━━━━━\nCheck anytime ▸ dcacafe.com\nFor reference only. Not investment advice.');
+  assert.ok(!zh.includes('$') && !zh.includes(' 分'));
 });
 
 test('查分數：同代碼只查一次、間隔、結果分類', async () => {

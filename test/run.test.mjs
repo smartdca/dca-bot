@@ -50,8 +50,8 @@ test('基本流程：合併同一人、忽略自己與無效代碼、回在最�
 
   assert.equal(ad.replies.length, 2);
   assert.equal(ad.replies[0].threadId, comments[1].threadId, 'amy：回在最新那則');
-  assert.match(ad.replies[0].text, /Apple Inc.（AAPL）：50 分\nTesla, Inc.（TSLA）：50 分/);
-  assert.match(ad.replies[1].text, /^@dan\nDCA Score\nBitcoin \(BTC-USD\): 50/, 'dan：英文、回覆串要 @');
+  assert.match(ad.replies[0].text, /🟡 Apple Inc.（AAPL）50\n🟡 Tesla, Inc.（TSLA）50/);
+  assert.match(ad.replies[1].text, /^@dan\n━+\n☕ DCA Score\n━+\n🟡 Bitcoin \(BTC-USD\) 50/, 'dan：英文、回覆串要 @');
   assert.equal(store.rows.length, 3, 'amy 兩則 + dan 一則');
   assert.ok(store.rows.every((r) => r.status === 'replied'));
   assert.deepEqual({ ...s.fake }, { fetched: 6, withDollar: 4, replied: 2, limited: 0, unsupported: 0, retryLater: 0, capReached: false });
@@ -114,7 +114,7 @@ test('分數失敗：部分失敗照回並標示；全部暫時失敗下批重�
     scorer: scorer({ TSLA: { status: 'unsupported' }, NVDA: { status: 'error' }, MSFT: { status: 'unsupported' } }),
   });
   assert.equal(ad.replies.length, 1);
-  assert.match(ad.replies[0].text, /Tesla, Inc.\(TSLA\): not available right now|Tesla, Inc. \(TSLA\): not available right now/);
+  assert.match(ad.replies[0].text, /⚪ Tesla, Inc. \(TSLA\) not available right now/);
   assert.equal(s.fake.retryLater, 1, 'bob 下批重試');
   assert.equal(s.fake.unsupported, 1);
   assert.deepEqual(store.rows.map((r) => r.status), ['replied', 'unsupported']);
@@ -128,4 +128,14 @@ test('試跑模式：不回覆、不寫記錄', async () => {
   assert.equal(ad.replies.length, 0);
   assert.equal(store.rows.length, 0);
   assert.match(logs[0], /AAPL/);
+});
+
+test('測試帳號不受每人每日上限（但仍受平台上限）', async () => {
+  const store = memoryStore();
+  const cfg = { ...config, testAuthorIds: ['tester'] };
+  const first = [c('tester', '$AAPL')];
+  await runBatch({ config: cfg, db: DB, store, adapters: [fakeAdapter(first)], scorer: scorer(), now: NOW });
+  const ad = fakeAdapter([...first, c('tester', '$TSLA')]);
+  await runBatch({ config: cfg, db: DB, store, adapters: [ad], scorer: scorer(), now: NOW });
+  assert.equal(ad.replies.length, 1, '同一天第二則照樣回');
 });

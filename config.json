@@ -4,6 +4,7 @@
   "maxTickersPerReply": 5,
   "perUserDailyReplies": 1,
   "userDayTimeZone": "Asia/Taipei",
+  "testAuthorIds": [],
   "siteUrl": {
     "zh": "dcacafe.com/zh/",
     "en": "dcacafe.com"

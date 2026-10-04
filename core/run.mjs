@@ -64,7 +64,8 @@ export async function runBatch({ config, db, store, adapters, scorer, now = new 
       const mkRows = (status, replyId = '') =>
         group.map((c) => ({ ...base, processedAt: now.toISOString(), commentId: c.id, status, replyId, tickers: items.map((i) => i.symbol).join(',') }));
 
-      if (repliesToday((r) => r.authorId === target.authorId && r.userDay === userDay) >= config.perUserDailyReplies) {
+      const isTester = (config.testAuthorIds || []).includes(target.authorId); // 測試帳號不受每人每日上限
+      if (!isTester && repliesToday((r) => r.authorId === target.authorId && r.userDay === userDay) >= config.perUserDailyReplies) {
         stats.limited += group.length;
         await persist(mkRows('limit'));
         continue;
@@ -83,7 +84,7 @@ export async function runBatch({ config, db, store, adapters, scorer, now = new 
       const text = formatReply({ lang, mention: target.isReply ? target.authorName : '', items, siteUrl: config.siteUrl });
 
       if (dryRun) {
-        log(`${adapter.name}｜原文：${group.map((c) => c.text).join(' / ')}\n讀到的代碼：${group.flatMap((c) => c.tokens).join(', ')}｜有效：${items.map((i) => i.symbol).join(', ')}\n---\n${text}`);
+        log(`${adapter.name}｜留言者 ID：${target.authorId}\n原文：${group.map((c) => c.text).join(' / ')}\n讀到的代碼：${group.flatMap((c) => c.tokens).join(', ')}｜有效：${items.map((i) => i.symbol).join(', ')}\n---\n${text}`);
         stats.replied++;
         continue;
       }
