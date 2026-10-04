@@ -114,12 +114,22 @@ export async function syncInbox({ adapter, comments, db, inbox, library, ai, pro
   return stats;
 }
 
-// 新建分頁時：「狀態」欄做成下拉選單
+// 新建分頁時：「狀態」欄做成下拉選單；Bot 自用的最後三欄（留言ID、串ID、UTC）隱藏起來
 export function inboxSetup(sheetId) {
-  return [{
-    setDataValidation: {
-      range: { sheetId, startRowIndex: 1, startColumnIndex: 0, endColumnIndex: 1 },
-      rule: { condition: { type: 'ONE_OF_LIST', values: Object.values(STATUS).map((v) => ({ userEnteredValue: v })) }, showCustomUi: true, strict: false },
+  const firstHidden = INBOX_COLUMNS.indexOf('留言ID');
+  return [
+    {
+      setDataValidation: {
+        range: { sheetId, startRowIndex: 1, startColumnIndex: 0, endColumnIndex: 1 },
+        rule: { condition: { type: 'ONE_OF_LIST', values: Object.values(STATUS).map((v) => ({ userEnteredValue: v })) }, showCustomUi: true, strict: false },
+      },
     },
-  }];
+    {
+      updateDimensionProperties: {
+        range: { sheetId, dimension: 'COLUMNS', startIndex: firstHidden, endIndex: INBOX_COLUMNS.length },
+        properties: { hiddenByUser: true },
+        fields: 'hiddenByUser',
+      },
+    },
+  ];
 }
