@@ -1,4 +1,4 @@
-name: DCA Score Bot
+name: DCA Score Bot 
 
 on:
   schedule:
