@@ -1,0 +1,20 @@
+{
+  "scoreApi": "https://proxy-three-mu-47.vercel.app/api/ticker-score",
+  "scoreRequestGapMs": 3000,
+  "maxTickersPerReply": 5,
+  "perUserDailyReplies": 1,
+  "userDayTimeZone": "Asia/Taipei",
+  "siteUrl": { "zh": "dcacafe.com/zh/", "en": "dcacafe.com" },
+  "sheet": { "spreadsheetId": "1msqXlcSfVVNkfPFzMQelHQq3YjDrkwP5B95liXylNug", "tab": "BotLog" },
+  "platforms": {
+    "youtube": {
+      "enabled": true,
+      "channelId": "UCXEvGJ2TYbXNblGrqafVHag",
+      "videoIds": [],
+      "dailyReplyCap": 150,
+      "quotaTimeZone": "America/Los_Angeles",
+      "lookbackHours": 72,
+      "maxPagesPerVideo": 5
+    }
+  }
+}

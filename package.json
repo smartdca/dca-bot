@@ -1,0 +1,11 @@
+{
+  "name": "dca-bot",
+  "private": true,
+  "description": "DCAcafé DCA Score 留言自動回覆",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node bot.mjs",
+    "build-tickers": "node scripts/build-tickers.mjs",
+    "test": "node --test test/*.test.mjs"
+  }
+}

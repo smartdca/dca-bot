@@ -1,0 +1,31 @@
+name: DCA Score Bot
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '試跑：只顯示會回什麼，不真的回覆、不寫記錄'
+        type: boolean
+        default: false
+
+# 同一時間只跑一批，避免重複回覆
+concurrency:
+  group: dca-score-bot
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: Run one batch
+        run: node bot.mjs
+        env:
+          DRY_RUN: ${{ inputs.dry_run == true && '1' || '0' }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
