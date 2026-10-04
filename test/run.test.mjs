@@ -51,7 +51,7 @@ test('基本流程：合併同一人、忽略自己與無效代碼、回在最�
   assert.equal(ad.replies.length, 2);
   assert.equal(ad.replies[0].threadId, comments[1].threadId, 'amy：回在最新那則');
   assert.match(ad.replies[0].text, /🟡 Apple Inc.（AAPL）50\n🟡 Tesla, Inc.（TSLA）50/);
-  assert.match(ad.replies[1].text, /^@dan\n━+\n☕ DCA Score\n━+\n🟡 Bitcoin \(BTC-USD\) 50/, 'dan：英文、回覆串要 @');
+  assert.match(ad.replies[1].text, /^@dan\n━+\n☕ DCA Score｜Oct 5, 2026\n━+\n🟡 Bitcoin \(BTC-USD\) 50/, 'dan：英文、回覆串要 @');
   assert.equal(store.rows.length, 3, 'amy 兩則 + dan 一則');
   assert.ok(store.rows.every((r) => r.status === 'replied'));
   assert.deepEqual({ ...s.fake }, { fetched: 6, withDollar: 4, replied: 2, limited: 0, unsupported: 0, retryLater: 0, capReached: false });

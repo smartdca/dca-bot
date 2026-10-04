@@ -7,22 +7,27 @@
 //   · 完整名稱 + 代碼 + 分數（整數）
 //   · 回覆裡不放 $（避免被當成查詢）
 //   · 每則附短版警語；完整版放在影片說明欄與置頂留言
+//   · 標題附上查詢日期（分數是當下的快照）：時區與網站計算相同（UTC），中英文統一格式 Oct 5, 2026
 
 const DIVIDER = '━━━━━━━━━━━━';
-const TITLE = '☕ DCA Score';
+const TITLE = (date) => `☕ DCA Score｜${date}`;
+
+export function formatDate(d) {
+  return new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' }).format(d);
+}
 
 const TEXT = {
   zh: {
     row: (name, symbol, score) => `${name}（${symbol}）${score}`,
     unavailable: (name, symbol) => `${name}（${symbol}）暫時無法計算`,
-    link: (url) => `即時查詢 ▸ ${url}`,
-    disclaimer: '僅供參考，非投資建議',
+    link: (url) => `查詢最新分數 ▸ ${url}`,
+    disclaimer: 'DCA Score 僅供參考，非投資建議',
   },
   en: {
     row: (name, symbol, score) => `${name} (${symbol}) ${score}`,
     unavailable: (name, symbol) => `${name} (${symbol}) not available right now`,
-    link: (url) => `Check anytime ▸ ${url}`,
-    disclaimer: 'For reference only. Not investment advice.',
+    link: (url) => `Latest DCA Score ▸ ${url}`,
+    disclaimer: 'DCA Score is for reference only. Not investment advice.',
   },
 };
 
@@ -32,11 +37,11 @@ export function scoreDot(score) {
   return '🔴';
 }
 
-export function formatReply({ lang, mention, items, siteUrl }) {
+export function formatReply({ lang, mention, items, siteUrl, date = new Date() }) {
   const t = TEXT[lang === 'zh' ? 'zh' : 'en'];
   const lines = [];
   if (mention) lines.push(mention);
-  lines.push(DIVIDER, TITLE, DIVIDER);
+  lines.push(DIVIDER, TITLE(formatDate(date)), DIVIDER);
   for (const it of items) {
     if (it.status === 'ok') {
       const s = Math.round(it.score);

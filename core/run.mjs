@@ -81,7 +81,7 @@ export async function runBatch({ config, db, store, adapters, scorer, now = new 
       }
 
       const lang = group.some((c) => hasCJK(c.text)) ? 'zh' : 'en';
-      const text = formatReply({ lang, mention: target.isReply ? target.authorName : '', items, siteUrl: config.siteUrl });
+      const text = formatReply({ lang, mention: target.isReply ? target.authorName : '', items, siteUrl: config.siteUrl, date: now });
 
       if (dryRun) {
         log(`${adapter.name}｜留言者 ID：${target.authorId}\n原文：${group.map((c) => c.text).join(' / ')}\n讀到的代碼：${group.flatMap((c) => c.tokens).join(', ')}｜有效：${items.map((i) => i.symbol).join(', ')}\n---\n${text}`);

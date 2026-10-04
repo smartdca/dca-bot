@@ -56,16 +56,17 @@ test('回覆文字', () => {
     { symbol: '2330.TW', name: '台積電', status: 'ok', score: 59.6 },
     { symbol: 'TSLA', name: 'Tesla, Inc.', status: 'unsupported' },
   ];
-  const zh = formatReply({ lang: 'zh', mention: '', items, siteUrl });
+  const date = new Date('2026-10-04T23:30:00Z'); // 台北已是 10/5，但以 UTC 為準 → Oct 4
+  const zh = formatReply({ lang: 'zh', mention: '', items, siteUrl, date });
   assert.equal(zh, [
-    '━━━━━━━━━━━━', '☕ DCA Score', '━━━━━━━━━━━━',
+    '━━━━━━━━━━━━', '☕ DCA Score｜Oct 4, 2026', '━━━━━━━━━━━━',
     '🟢 Apple Inc.（AAPL）72',
     '🟡 台積電（2330.TW）60', // 59.6 顯示 60，但顏色依原始分數（與網站相同）
     '⚪ Tesla, Inc.（TSLA）暫時無法計算',
-    '━━━━━━━━━━━━', '即時查詢 ▸ dcacafe.com/zh/', '僅供參考，非投資建議',
+    '━━━━━━━━━━━━', '查詢最新分數 ▸ dcacafe.com/zh/', 'DCA Score 僅供參考，非投資建議',
   ].join('\n'));
-  const en = formatReply({ lang: 'en', mention: '@amy', items: [{ symbol: 'X', name: 'X Corp', status: 'ok', score: 12 }], siteUrl });
-  assert.equal(en, '@amy\n━━━━━━━━━━━━\n☕ DCA Score\n━━━━━━━━━━━━\n🔴 X Corp (X) 12\n━━━━━━━━━━━━\nCheck anytime ▸ dcacafe.com\nFor reference only. Not investment advice.');
+  const en = formatReply({ lang: 'en', mention: '@amy', items: [{ symbol: 'X', name: 'X Corp', status: 'ok', score: 12 }], siteUrl, date: new Date('2026-10-15T12:00:00Z') });
+  assert.equal(en, '@amy\n━━━━━━━━━━━━\n☕ DCA Score｜Oct 15, 2026\n━━━━━━━━━━━━\n🔴 X Corp (X) 12\n━━━━━━━━━━━━\nLatest DCA Score ▸ dcacafe.com\nDCA Score is for reference only. Not investment advice.');
   assert.ok(!zh.includes('$') && !zh.includes(' 分'));
 });
 
