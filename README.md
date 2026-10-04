@@ -1,6 +1,16 @@
 # DCA Score Bot
 
-社群留言輸入 `$代碼`，自動回覆 DCA Score。目前平台：YouTube（只處理 `config.json` 列出的影片）。
+社群留言輸入 `$代碼`，自動回覆 DCA Score；其他留言整理到 Google Sheet 的留言分頁，由 Henry 手動回覆。目前平台：YouTube（只處理 `config.json` 列出的影片）。
+
+## 全部攔截模式（`holdAll`）
+
+影片在 YouTube 設成「全部攔截」。Bot 讀「已公開」與「被攔截」的留言：格式正確的 `$` 查詢先核准再回覆（一則共 100 點額度，每天上限 85 人），其他留言維持扣住。YouTube 判定為「可能是垃圾」的不讀。
+
+## 留言分頁（`留言-YouTube`，之後每個平台一個分頁）
+
+- 一般留言自動分類：可疑 → 格式錯誤（固定說明）→ 回覆庫命中 → AI 建議（Claude Haiku，需 `ANTHROPIC_API_KEY`）
+- Henry 點「連結」到 YouTube 手動回覆（不花額度）；Bot 偵測到頻道回覆後自動標「已回覆」，並把「問題＋回覆」存進 `回覆庫`
+- 7 天沒處理自動「逾期略過」；Henry 手動改的狀態不會被覆蓋
 
 ## 規則（已定案）
 
@@ -8,7 +18,7 @@
 |---|---|
 | 觸發 | 代碼前加 `$`（全形 `＄` 也算） |
 | 多個代碼 | 逗號分隔（全形 `，` 也算）；沒有分隔只取第一個 |
-| 上限 | 每則最多 5 個；每人每天 1 則回覆（台北時間）；YouTube 每天 150 則（美西時間，對齊 YouTube 額度重置） |
+| 上限 | 每則最多 5 個；每人每天 1 則回覆（台北時間）；YouTube 每天 85 則（全部攔截模式：核准＋回覆 100 點；美西時間，對齊 YouTube 額度重置） |
 | 格式 | Yahoo 格式，大小寫不拘；台股可省略 `.TW`／`.TWO`；加密貨幣可省略 `-USD` |
 | 撞名 | 加密貨幣 → 台股 → 美股 |
 | 錯誤代碼 | 不推測、不回覆、不記錄 |
@@ -18,7 +28,7 @@
 
 ## 排程
 
-- `DCA Score Bot`：每 30 分鐘一批（私人 repo 免費額度內）。手動執行時可勾「試跑」。
+- `DCA Score Bot`：每小時 06、36 分（GitHub 排程可能延遲數小時，回覆不保證時間）。手動執行時可勾「試跑」。
 - `Update Ticker Database`：每週一 02:00（台北）重建 `data/tickers-db.json`。
   - 美股：Nasdaq Trader 全市場清單（排除權證、單位、優先股）
   - 台股：證交所＋櫃買中心公開資料（一般股票與 ETF）
@@ -31,7 +41,7 @@ Actions 執行紀錄只印統計數字，不印留言內容。
 
 ## Secrets
 
-`YT_CLIENT_ID`、`YT_CLIENT_SECRET`、`YT_REFRESH_TOKEN`、`GOOGLE_SERVICE_ACCOUNT`
+`YT_CLIENT_ID`、`YT_CLIENT_SECRET`、`YT_REFRESH_TOKEN`、`GOOGLE_SERVICE_ACCOUNT`、`ANTHROPIC_API_KEY`（選用：沒有就不產生 AI 建議）
 
 ## 新增影片／平台
 
@@ -41,4 +51,4 @@ Actions 執行紀錄只印統計數字，不印留言內容。
 ## 已知限制
 
 - 回覆串：只看得到 YouTube 隨留言一起回傳的回覆（每串最近幾則），很長的回覆串裡較舊的回覆可能讀不到。
-- 只處理 72 小時內的留言。
+- 只處理 7 天內的留言。

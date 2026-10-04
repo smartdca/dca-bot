@@ -78,8 +78,8 @@ test('Sheet：Service Account 簽章正確、分頁不存在時自動建立、�
       assert.equal(claims.scope, 'https://www.googleapis.com/auth/spreadsheets');
       return res(200, { access_token: 'ST' });
     }
-    if (url.endsWith('?fields=sheets.properties.title')) return res(200, { sheets: sheet.BotLog ? [{ properties: { title: 'BotLog' } }] : [] });
-    if (url.endsWith(':batchUpdate')) { sheet.BotLog = []; return res(200, {}); }
+    if (url.includes('?fields=sheets.properties')) return res(200, { sheets: sheet.BotLog ? [{ properties: { title: 'BotLog', sheetId: 1 } }] : [] });
+    if (url.endsWith(':batchUpdate')) { sheet.BotLog = []; return res(200, { replies: [{ addSheet: { properties: { sheetId: 1 } } }] }); }
     if (init.method === 'PUT') { sheet.BotLog.push(...JSON.parse(init.body).values); return res(200, {}); }
     if (url.includes(':append')) { sheet.BotLog.push(...JSON.parse(init.body).values); return res(200, {}); }
     return res(200, { values: sheet.BotLog.slice(1) });

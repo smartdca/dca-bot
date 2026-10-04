@@ -54,7 +54,7 @@ test('基本流程：合併同一人、忽略自己與無效代碼、回在最�
   assert.match(ad.replies[1].text, /^@dan\n━+\n☕ DCAcafé｜Oct 5, 2026\n━+\n🟡 Bitcoin \(BTC-USD\) 50/, 'dan：英文、回覆串要 @');
   assert.equal(store.rows.length, 3, 'amy 兩則 + dan 一則');
   assert.ok(store.rows.every((r) => r.status === 'replied'));
-  assert.deepEqual({ ...s.fake }, { fetched: 6, withDollar: 4, replied: 2, limited: 0, unsupported: 0, retryLater: 0, capReached: false });
+  assert.deepEqual({ ...s.fake }, { fetched: 6, withDollar: 4, approved: 0, replied: 2, limited: 0, unsupported: 0, retryLater: 0, capReached: false });
 
   // 下一批：同樣的留言不會再回
   const ad2 = fakeAdapter(comments);

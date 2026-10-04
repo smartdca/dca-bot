@@ -1,6 +1,7 @@
 // 一批處理流程（與平台無關）。
 //
 //   各平台抓新留言 → 只看有 $ 的 → 查資料庫 → 依「人＋影片」合併 →
+//   （全部攔截模式：被扣住的先核准）→
 //   檢查每人每日／平台每日上限 → 查分數 → 回覆 → 寫記錄
 //
 // 記錄（BotLog）每一列 = 一則處理過的留言：
@@ -23,7 +24,7 @@ export async function runBatch({ config, db, store, adapters, scorer, now = new 
   for (const adapter of adapters) {
     const pcfg = config.platforms[adapter.name];
     const quotaDay = dayIn(pcfg.quotaTimeZone || 'UTC', now);
-    const stats = { fetched: 0, withDollar: 0, replied: 0, limited: 0, unsupported: 0, retryLater: 0, capReached: false };
+    const stats = { fetched: 0, withDollar: 0, approved: 0, replied: 0, limited: 0, unsupported: 0, retryLater: 0, capReached: false };
     summary[adapter.name] = stats;
 
     const comments = await adapter.fetchComments({ now });
@@ -91,6 +92,13 @@ export async function runBatch({ config, db, store, adapters, scorer, now = new 
 
       let replyId;
       try {
+        // 全部攔截模式：被扣住的留言要先核准才能公開、才能回覆。
+        // 只核准要回覆的那一則；同一人合併的其他則維持扣住（省額度，也讓留言區只留一則）。
+        // 核准成功但回覆失敗時，下一批會在「已公開」清單讀到它，直接補回覆，不會重複核准。
+        if (target.held) {
+          await adapter.approve(target);
+          stats.approved++;
+        }
         replyId = await adapter.reply({ target, text });
       } catch (e) {
         if (e instanceof QuotaError) { stats.capReached = true; break; }

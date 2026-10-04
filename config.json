@@ -22,10 +22,14 @@
       "videoIds": [
         "BaKHtwLq60E"
       ],
-      "dailyReplyCap": 150,
+      "holdAll": true,
+      "dailyReplyCap": 85,
       "quotaTimeZone": "America/Los_Angeles",
-      "lookbackHours": 72,
-      "maxPagesPerVideo": 5
+      "lookbackHours": 168,
+      "maxPagesPerVideo": 5,
+      "inboxTab": "留言-YouTube",
+      "inboxExpireDays": 7
     }
-  }
+  },
+  "libraryTab": "回覆庫"
 }
