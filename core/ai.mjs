@@ -34,6 +34,8 @@ const SYSTEM = `你負責幫 DCAcafé 的 YouTube 頻道整理觀眾留言。頻
 8. Insights 部落格：市場觀察與定期定額觀念文章。`;
 
 export function makeAi({ apiKey, fetchImpl = fetch }) {
+  // 貼上 Secret 時常常多帶換行或空白（第一次就遇到），金鑰本身不會有空白，一律去掉
+  apiKey = String(apiKey || '').replace(/\s+/g, '');
   if (!apiKey) return null;
   return {
     async suggest(text) {

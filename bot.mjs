@@ -73,7 +73,7 @@ try {
       adapter: a, comments: await a.fetchComments({ now }), db, inbox, library, ai, processedIds, botReplyIds, now,
       expireDays: pcfg.inboxExpireDays, log: (m) => notice('留言分頁', m),
     });
-    notice(`${a.name} 留言分頁`, `新增 ${s.added}｜偵測到你已回覆 ${s.replied}｜逾期 ${s.expired}｜回覆庫命中 ${s.libraryUsed}｜AI 建議 ${s.aiUsed}${ai ? '' : '（未設定 AI 金鑰）'}｜存進回覆庫 ${s.learned}`);
+    notice(`${a.name} 留言分頁`, `新增 ${s.added}｜補上建議 ${s.backfilled}｜偵測到你已回覆 ${s.replied}｜逾期 ${s.expired}｜回覆庫命中 ${s.libraryUsed}｜AI 建議 ${s.aiUsed}${ai ? '' : '（未設定 AI 金鑰）'}｜存進回覆庫 ${s.learned}`);
     if (dryRun) {
       for (const r of inbox.rows) notice('試跑・留言分頁', `${r['類別']}｜${r['留言內容']}\n建議回覆：${r['建議回覆'] || '（無）'}`);
     }

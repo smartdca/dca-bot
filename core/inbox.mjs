@@ -3,6 +3,7 @@
 // Bot 每批做的事：
 //   1. 新的一般留言（不是有效的 $ 查詢）→ 分類＋建議回覆 → 加到分頁，狀態「待處理」
 //        建議回覆的來源順序：固定說明（格式錯誤）→ 回覆庫 → AI → 都沒有就留空
+//      之前沒拿到建議的（類別「未分類」）每批會再補一次
 //   2. 偵測 Henry 在 YouTube 回覆了沒有 → 狀態改「已回覆」，並把「問題＋他的回覆」存進回覆庫
 //   3. 超過 expireDays 還沒處理 → 狀態改「逾期略過」
 // Henry 只需要：打開分頁 → 篩選「待處理」→ 點連結到 YouTube 回覆。他手動改的狀態 Bot 不會覆蓋。
@@ -35,10 +36,26 @@ export function isFormatError(text, db) {
 const taipeiTime = (d) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(d);
 
 export async function syncInbox({ adapter, comments, db, inbox, library, ai, processedIds, botReplyIds, now = new Date(), expireDays = 7, maxAiPerRun = 20, log = () => {} }) {
-  const stats = { added: 0, replied: 0, expired: 0, aiUsed: 0, libraryUsed: 0, learned: 0 };
+  const stats = { added: 0, backfilled: 0, replied: 0, expired: 0, aiUsed: 0, libraryUsed: 0, learned: 0 };
   const rows = await inbox.load();
   const lib = await library.load();
   const known = new Set(rows.map((r) => r['留言ID']));
+
+  // 建議回覆：先查回覆庫（免費），找不到才問 AI。回傳 null = 這批 AI 額度用完
+  async function lookup(text, lang) {
+    const hit = findAnswer(lib, text, { lang });
+    if (hit) { stats.libraryUsed++; return { category: hit['類別'] || '問題', suggestion: hit['回覆'] }; }
+    if (!ai) return { category: '未分類', suggestion: '' };
+    if (stats.aiUsed >= maxAiPerRun) return null;
+    stats.aiUsed++;
+    try {
+      const s = await ai.suggest(text);
+      return { category: s?.category || '未分類', suggestion: s?.reply || '' };
+    } catch (e) {
+      log(`AI 建議失敗：${e.message}`);
+      return { category: '未分類', suggestion: '' };
+    }
+  }
 
   // ── 1. 新留言進分頁 ──
   const newRows = [];
@@ -56,25 +73,9 @@ export async function syncInbox({ adapter, comments, db, inbox, library, ai, pro
       category = '格式錯誤';
       suggestion = FORMAT_HELP[lang];
     } else {
-      const hit = findAnswer(lib, c.text, { lang });
-      if (hit) {
-        category = hit['類別'] || '問題';
-        suggestion = hit['回覆'];
-        stats.libraryUsed++;
-      } else if (ai) {
-        if (stats.aiUsed >= maxAiPerRun) continue; // 這批 AI 額度用完，下一批再處理
-        stats.aiUsed++;
-        try {
-          const s = await ai.suggest(c.text);
-          category = s?.category || '未分類';
-          suggestion = s?.reply || '';
-        } catch (e) {
-          log(`AI 建議失敗：${e.message}`);
-          category = '未分類';
-        }
-      } else {
-        category = '未分類';
-      }
+      const r = await lookup(c.text, lang);
+      if (!r) continue; // 這批 AI 額度用完，下一批再處理
+      ({ category, suggestion } = r);
     }
     newRows.push({
       '狀態': STATUS.todo, '時間': taipeiTime(c.publishedAt), '留言者': c.authorName, '留言內容': c.text,
@@ -84,6 +85,17 @@ export async function syncInbox({ adapter, comments, db, inbox, library, ai, pro
   }
   await inbox.append(newRows);
   stats.added = newRows.length;
+
+  // ── 1b. 之前沒拿到建議的（AI 當時失敗或沒設定金鑰）→ 補上 ──
+  const backfill = [];
+  for (const r of rows) {
+    if (r['狀態'] !== STATUS.todo || r['類別'] !== '未分類' || r['建議回覆']) continue;
+    const got = await lookup(r['留言內容'], hasCJK(r['留言內容']) ? 'zh' : 'en');
+    if (!got || got.category === '未分類') continue;
+    backfill.push({ _row: r._row, field: '類別', value: got.category }, { _row: r._row, field: '建議回覆', value: got.suggestion });
+    stats.backfilled++;
+  }
+  await inbox.update(backfill);
 
   // ── 2. 偵測 Henry 回覆了沒有／3. 逾期 ──
   const channelRepliesByThread = new Map();

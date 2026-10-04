@@ -227,3 +227,24 @@ test('分頁存取：新建時套用下拉選單、欄位對應、更新儲存�
     ['update', '留言-YouTube', [{ row: 2, col: 1, value: '已回覆' }]],
   ]);
 });
+
+test('金鑰前後的空白換行會被去掉', async () => {
+  let key;
+  const ai = makeAi({ apiKey: '  sk-ant-abc\n', fetchImpl: async (u, init) => { key = init.headers['x-api-key']; return { ok: true, status: 200, json: async () => ({ content: [{ text: '{"category":"閒聊","reply":"謝謝"}' }] }) }; } });
+  await ai.suggest('hi');
+  assert.equal(key, 'sk-ant-abc');
+  assert.equal(makeAi({ apiKey: ' \n ' }), null);
+});
+
+test('留言分頁：之前沒拿到建議的「未分類」會補上；有建議或手動處理過的不動', async () => {
+  const inbox = memoryTable(INBOX_COLUMNS, [
+    { '狀態': STATUS.todo, '留言內容': '請問 DCA Score 多久更新一次？', '類別': '未分類', '建議回覆': '', '留言ID': 'a', 'UTC': NOW.toISOString() },
+    { '狀態': STATUS.todo, '留言內容': '已經有建議的', '類別': '問題', '建議回覆': '原本的', '留言ID': 'b', 'UTC': NOW.toISOString() },
+    { '狀態': STATUS.skip, '留言內容': '略過的', '類別': '未分類', '建議回覆': '', '留言ID': 'c', 'UTC': NOW.toISOString() },
+  ]);
+  const ai = aiStub('問題', '每天都會更新喔');
+  const s = await syncInbox({ adapter: fakeAdapter, comments: [], db: DB, inbox, library: memoryTable(LIBRARY_COLUMNS), ai, processedIds: new Set(), botReplyIds: new Set(), now: NOW });
+  assert.deepEqual(inbox.rows.map((r) => [r['類別'], r['建議回覆']]), [['問題', '每天都會更新喔'], ['問題', '原本的'], ['未分類', '']]);
+  assert.equal(s.backfilled, 1);
+  assert.deepEqual(ai.calls, ['請問 DCA Score 多久更新一次？']);
+});
