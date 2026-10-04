@@ -4,13 +4,21 @@
   "maxTickersPerReply": 5,
   "perUserDailyReplies": 1,
   "userDayTimeZone": "Asia/Taipei",
-  "siteUrl": { "zh": "dcacafe.com/zh/", "en": "dcacafe.com" },
-  "sheet": { "spreadsheetId": "1msqXlcSfVVNkfPFzMQelHQq3YjDrkwP5B95liXylNug", "tab": "BotLog" },
+  "siteUrl": {
+    "zh": "dcacafe.com/zh/",
+    "en": "dcacafe.com"
+  },
+  "sheet": {
+    "spreadsheetId": "1msqXlcSfVVNkfPFzMQelHQq3YjDrkwP5B95liXylNug",
+    "tab": "BotLog"
+  },
   "platforms": {
     "youtube": {
       "enabled": true,
       "channelId": "UCXEvGJ2TYbXNblGrqafVHag",
-      "videoIds": [],
+      "videoIds": [
+        "BaKHtwLq60E"
+      ],
       "dailyReplyCap": 150,
       "quotaTimeZone": "America/Los_Angeles",
       "lookbackHours": 72,
