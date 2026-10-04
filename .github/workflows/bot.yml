@@ -2,7 +2,7 @@ name: DCA Score Bot
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '6/36 * * * *'
   workflow_dispatch:
     inputs:
       dry_run:
