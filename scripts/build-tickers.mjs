@@ -7,6 +7,9 @@ import { parseNasdaqListed, parseOtherListed, parseTwList, filterCoins } from '.
 const DB_PATH = new URL('../data/tickers-db.json', import.meta.url);
 const UA = { 'User-Agent': 'Mozilla/5.0 (compatible; DCAcafe-Bot)' };
 const CRYPTO_TOP = 50;
+// 黃金代幣：市值前 50 的篩選會排除它們（沿用每週精選規則），但 Henry 要求一律收錄。
+// 這兩個 Yahoo 代碼已在網站驗證過可以算出 DCA Score（不在前 50 名額內，另外加）。
+const GOLD_TOKENS = { PAXG: { y: 'PAXG-USD', n: 'PAX Gold' }, XAUT: { y: 'XAUT-USD', n: 'Tether Gold' } };
 const YAHOO_GAP_MS = 2000;
 const MIN = { us: 5000, tw: 1000, crypto: 30 }; // 低於這個數量 = 下載不完整，不採用
 
@@ -65,7 +68,7 @@ await section('crypto', async () => {
     }
     out[c.sym] = { y, n: c.name };
   }
-  return out;
+  return { ...out, ...GOLD_TOKENS };
 });
 
 next.updated = new Date().toISOString();
