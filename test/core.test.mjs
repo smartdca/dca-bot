@@ -66,7 +66,7 @@ test('回覆文字', () => {
     '━━━━━━━━━━━━', '查詢最新分數 ▸ dcacafe.com/zh/', 'DCA Score 僅供參考，非投資建議',
   ].join('\n'));
   const en = formatReply({ lang: 'en', mention: '@amy', items: [{ symbol: 'X', name: 'X Corp', status: 'ok', score: 12 }], siteUrl, date: new Date('2026-10-15T12:00:00Z') });
-  assert.equal(en, '@amy\n━━━━━━━━━━━━\n☕ DCAcafé｜Oct 15, 2026\n━━━━━━━━━━━━\n🔴 X Corp (X) 12\n━━━━━━━━━━━━\nLatest DCA Score ▸ dcacafe.com\nDCA Score is for reference only. Not investment advice.');
+  assert.equal(en, '@amy\n━━━━━━━━━━━━\n☕ DCAcafé｜Oct 15, 2026\n━━━━━━━━━━━━\n🔴 X Corp (X) 12\n━━━━━━━━━━━━\nLatest DCA Score ▸ dcacafe.com\nDCA Score is for reference only.\nNot investment advice.');
   assert.ok(!zh.includes('$') && !zh.includes(' 分'));
 });
 

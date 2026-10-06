@@ -27,7 +27,7 @@ const TEXT = {
     row: (name, symbol, score) => `${name} (${symbol}) ${score}`,
     unavailable: (name, symbol) => `${name} (${symbol}) not available right now`,
     link: (url) => `Latest DCA Score ▸ ${url}`,
-    disclaimer: 'DCA Score is for reference only. Not investment advice.',
+    disclaimer: 'DCA Score is for reference only.\nNot investment advice.',
   },
 };
 
