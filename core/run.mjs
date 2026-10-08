@@ -1,6 +1,6 @@
 // 一批處理流程（與平台無關）。
 //
-//   各平台抓新留言 → 只看有 $ 的 → 查資料庫 → 依「人＋影片」合併 →
+//   各平台抓新留言 → 只看有 $ 的 → 查資料庫 → 依「人」合併（跨影片）→
 //   （全部攔截模式：被扣住的先核准）→
 //   檢查每人每日／平台每日上限 → 查分數 → 回覆 → 寫記錄
 //
@@ -40,10 +40,11 @@ export async function runBatch({ config, db, store, adapters, scorer, now = new 
       candidates.push({ ...c, tokens });
     }
 
-    // 同一個人在同一支影片的留言合併成一則回覆
+    // 同一個人這一批的留言（不分影片）合併成一則回覆，回在他最新那則底下（Henry 2026-10-08 定案）。
+    // 其他則維持扣住、不回覆；處理順序依每個人最早那則留言的時間（先留先回）。
     const groups = new Map();
     for (const c of candidates.sort((a, b) => a.publishedAt - b.publishedAt)) {
-      const key = `${c.videoId}|${c.authorId}`;
+      const key = c.authorId;
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(c);
     }
@@ -61,9 +62,9 @@ export async function runBatch({ config, db, store, adapters, scorer, now = new 
       }
 
       const target = group[group.length - 1]; // 回在最新那則底下
-      const base = { platform: adapter.name, videoId: target.videoId, authorId: target.authorId, userDay, quotaDay };
+      const base = { platform: adapter.name, authorId: target.authorId, userDay, quotaDay };
       const mkRows = (status, replyId = '') =>
-        group.map((c) => ({ ...base, processedAt: now.toISOString(), commentId: c.id, status, replyId, tickers: items.map((i) => i.symbol).join(',') }));
+        group.map((c) => ({ ...base, videoId: c.videoId, processedAt: now.toISOString(), commentId: c.id, status, replyId, tickers: items.map((i) => i.symbol).join(',') }));
 
       const isTester = (config.testAuthorIds || []).includes(target.authorId); // 測試帳號不受每人每日上限
       if (!isTester && repliesToday((r) => r.authorId === target.authorId && r.userDay === userDay) >= config.perUserDailyReplies) {

@@ -139,3 +139,22 @@ test('測試帳號不受每人每日上限（但仍受平台上限）', async ()
   await runBatch({ config: cfg, db: DB, store, adapters: [ad], scorer: scorer(), now: NOW });
   assert.equal(ad.replies.length, 1, '同一天第二則照樣回');
 });
+
+test('跨影片：同一人在不同影片的留言合併成一則，回在最新那則；記錄保留各自的影片', async () => {
+  const comments = [
+    c('eve', '$AAPL', { videoId: 'V1' }),
+    c('fay', '$BTC', { videoId: 'V2' }),
+    c('eve', '$TSLA', { videoId: 'V2' }),
+  ];
+  const store = memoryStore();
+  const ad = fakeAdapter(comments);
+  const s = await runBatch({ config, db: DB, store, adapters: [ad], scorer: scorer(), now: NOW });
+
+  assert.equal(ad.replies.length, 2, 'eve 一則、fay 一則');
+  assert.equal(ad.replies[0].threadId, comments[2].threadId, 'eve：回在最新那則（V2）');
+  assert.match(ad.replies[0].text, /Apple Inc\. \(AAPL\) 50\n🟡 Tesla, Inc\. \(TSLA\) 50/);
+  assert.equal(s.fake.limited, 0);
+  const eve = store.rows.filter((r) => r.authorId === 'eve');
+  assert.deepEqual(eve.map((r) => r.videoId), ['V1', 'V2']);
+  assert.ok(eve.every((r) => r.status === 'replied' && r.replyId === 'r1'));
+});
