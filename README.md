@@ -46,6 +46,7 @@ Actions 執行紀錄只印統計數字，不印留言內容。
 ## 新增影片／平台
 
 - 影片：把影片 ID 加進 `config.json` → `platforms.youtube.videoIds`
+- 特定影片換回覆標題符號：`platforms.youtube.videoEmoji`，例如 `{"RE6j_2Don9g": "🎄"}`（沒設定的用 ☕）。影片下架時兩處一起移除
 - 平台：在 `platforms/` 新增模組（只需實作「抓留言」與「回覆」），在 `bot.mjs` 加入
 
 ## 已知限制

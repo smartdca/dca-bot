@@ -158,3 +158,12 @@ test('跨影片：同一人在不同影片的留言合併成一則，回在最�
   assert.deepEqual(eve.map((r) => r.videoId), ['V1', 'V2']);
   assert.ok(eve.every((r) => r.status === 'replied' && r.replyId === 'r1'));
 });
+
+test('特定影片換標題符號：聖誕影片用 🎄，其他影片維持 ☕', async () => {
+  const cfg = { ...config, platforms: { fake: { ...config.platforms.fake, videoEmoji: { XMAS: '🎄' } } } };
+  const comments = [c('gus', '$AAPL', { videoId: 'XMAS' }), c('hal', '$AAPL', { videoId: 'V1' })];
+  const ad = fakeAdapter(comments);
+  await runBatch({ config: cfg, db: DB, store: memoryStore(), adapters: [ad], scorer: scorer(), now: NOW });
+  assert.match(ad.replies[0].text, /^━+\n🎄 DCAcafé｜/);
+  assert.match(ad.replies[1].text, /^━+\n☕ DCAcafé｜/);
+});

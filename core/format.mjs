@@ -10,7 +10,7 @@
 //   · 標題附上查詢日期（分數是當下的快照）：時區與網站計算相同（UTC），中英文統一格式 Oct 5, 2026
 
 const DIVIDER = '━━━━━━━━━━━━';
-const TITLE = (date) => `☕ DCAcafé｜${date}`;
+const TITLE = (date, emoji = '☕') => `${emoji} DCAcafé｜${date}`; // 特定影片可換符號（例：聖誕影片用 🎄）
 
 export function formatDate(d) {
   return new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' }).format(d);
@@ -37,11 +37,11 @@ export function scoreDot(score) {
   return '🔴';
 }
 
-export function formatReply({ lang, mention, items, siteUrl, date = new Date() }) {
+export function formatReply({ lang, mention, items, siteUrl, date = new Date(), emoji }) {
   const t = TEXT[lang === 'zh' ? 'zh' : 'en'];
   const lines = [];
   if (mention) lines.push(mention);
-  lines.push(DIVIDER, TITLE(formatDate(date)), DIVIDER);
+  lines.push(DIVIDER, TITLE(formatDate(date), emoji || undefined), DIVIDER);
   for (const it of items) {
     if (it.status === 'ok') {
       const s = Math.round(it.score);
