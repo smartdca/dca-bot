@@ -1,5 +1,6 @@
 {
   "scoreApi": "https://proxy-three-mu-47.vercel.app/api/ticker-score",
+  "countApi": "https://proxy-three-mu-47.vercel.app/api/sheets?table=score-count",
   "scoreRequestGapMs": 3000,
   "maxTickersPerReply": 5,
   "perUserDailyReplies": 1,

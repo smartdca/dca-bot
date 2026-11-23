@@ -53,7 +53,7 @@ try {
   const summary = await runBatch({
     config, db, store, adapters, dryRun, now,
     log: (m) => notice(dryRun ? '試跑' : '訊息', m),
-    scorer: makeScorer({ api: config.scoreApi, gapMs: config.scoreRequestGapMs }),
+    scorer: makeScorer({ api: config.scoreApi, countApi: config.countApi, gapMs: config.scoreRequestGapMs }),
   });
   for (const [p, s] of Object.entries(summary)) {
     notice(`${p} 分數查詢`, `抓到 ${s.fetched} 則｜含 $ ${s.withDollar}｜核准 ${s.approved}｜回覆 ${s.replied}｜當日已回過 ${s.limited}｜算不出分數 ${s.unsupported}｜下批重試 ${s.retryLater}${s.capReached ? '｜⚠️ 已達每日上限' : ''}`);
