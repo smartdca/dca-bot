@@ -3,7 +3,7 @@
 //   · 每次請求之間至少間隔 gapMs（Proxy 每個 IP 每分鐘上限 30 次，這裡壓在 20 次以內）
 //   · 結果三種：ok / unsupported（代碼算不出分數）/ error（暫時失敗，下一批再試）
 
-// countApi（選填）：DCA Score 計數器的位址。有填，每成功取到一次分數就回報一次（自動、系統、bot）；
+// countApi（選填）：DCA Score 計數器的位址。有填，每算出一次分數就回報一次（自動、系統、bot）；
 // 沒填就完全不回報。回報失敗一律吞掉，不影響機器人回覆。
 export function makeScorer({ api, countApi, gapMs = 3000, fetchImpl = fetch, sleep = defaultSleep }) {
   const cache = new Map();
@@ -21,7 +21,6 @@ export function makeScorer({ api, countApi, gapMs = 3000, fetchImpl = fetch, sle
       if (!res.ok) return { status: 'error' };
       const d = await res.json();
       if (typeof d.score !== 'number') return { status: 'error' };
-      await report(symbol);
       return { status: 'ok', score: d.score };
     } catch {
       return { status: 'error' };
@@ -44,7 +43,10 @@ export function makeScorer({ api, countApi, gapMs = 3000, fetchImpl = fetch, sle
   return {
     async get(symbol) {
       if (!cache.has(symbol)) cache.set(symbol, await fetchOne(symbol));
-      return cache.get(symbol);
+      const r = cache.get(symbol);
+      // 計數器：每一次「替某則回覆算出分數」記一次——同一批裡同一代碼被不同人問，各記一次（即使查詢用的是快取）
+      if (r.status === 'ok') await report(symbol);
+      return r;
     },
   };
 }

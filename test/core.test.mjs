@@ -90,6 +90,25 @@ test('查分數：同代碼只查一次、間隔、結果分類', async () => {
   assert.equal(sleeps.length, 2, '第 2、3 次請求前有等待');
 });
 
+test('計數器：每算出一次分數記一次（含快取）；失敗與不支援不記；沒填網址完全不記', async () => {
+  const posts = [];
+  const fetchImpl = async (url, opt) => {
+    if (opt && opt.method === 'POST') { posts.push(JSON.parse(opt.body)); return { ok: true }; }
+    const t = new URL(url).searchParams.get('ticker');
+    if (t === 'BAD') return { status: 400, ok: false, json: async () => ({}) };
+    if (t === 'DOWN') return { status: 500, ok: false, json: async () => ({}) };
+    return { status: 200, ok: true, json: async () => ({ score: 61.2 }) };
+  };
+  const s = makeScorer({ api: 'https://x/api/ticker-score', countApi: 'https://x/count', gapMs: 0, fetchImpl, sleep: async () => {} });
+  await s.get('AAPL'); await s.get('AAPL'); await s.get('BAD'); await s.get('DOWN');
+  assert.equal(posts.length, 2, '同一代碼被問兩次 = 記兩次，BAD／DOWN 不記');
+  assert.deepEqual(posts[0], { t: ['AAPL'], src: 'auto', who: 'system', ch: 'bot' });
+  const off = [];
+  const s2 = makeScorer({ api: 'https://x/api/ticker-score', gapMs: 0, fetchImpl: async (u, o) => { off.push(o && o.method); return { status: 200, ok: true, json: async () => ({ score: 50 }) }; }, sleep: async () => {} });
+  await s2.get('AAPL'); await s2.get('AAPL');
+  assert.equal(off.filter((m) => m === 'POST').length, 0);
+});
+
 test('日期：台北與美西', () => {
   const t = new Date('2026-10-04T17:30:00Z'); // 台北 10/5 01:30、美西 10/4 10:30
   assert.equal(dayIn('Asia/Taipei', t), '2026-10-05');
