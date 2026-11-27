@@ -21,6 +21,7 @@
       "enabled": true,
       "channelId": "UCXEvGJ2TYbXNblGrqafVHag",
       "videoIds": [
+        "8fki_sG3HG4",
         "RE6j_2Don9g",
         "OBMrlVKySMo",
         "3zL4rqsjdHQ",
@@ -30,7 +31,8 @@
         "BaKHtwLq60E"
       ],
       "videoEmoji": {
-        "RE6j_2Don9g": "🎄"
+        "RE6j_2Don9g": "🎄",
+        "8fki_sG3HG4": "🎄"
       },
       "holdAll": true,
       "dailyReplyCap": 85,
